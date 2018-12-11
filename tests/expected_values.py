@@ -31,6 +31,7 @@ def coeff2waves(_f):
 # f1
 f_coeffs = []
 
+#%%
 _f = [zero]*16
 
 _f[0] = one
@@ -39,7 +40,6 @@ _f[5] = (2 + 3*I)/5
 _f[12] = (1 - 3*I)/36
 
 f_coeffs.append(_f)
-
 
 #%%
 #f2
@@ -82,3 +82,12 @@ fs = []
 for _f in f_coeffs:
     f = coeff2waves(_f)
     fs.append(f)
+
+#%%
+fft_coeffs = []
+for _f in f_coeffs:
+    _fft_coeff = []
+    for _ab in _f:
+        _fft_coeff.append(_ab.evalf())
+    _fft_coeff[0] = _fft_coeff[0]*2.0
+    fft_coeffs.append(_fft_coeff)
