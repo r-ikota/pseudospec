@@ -2,23 +2,20 @@ from __future__ import division
 import numpy as np
 from scipy.fftpack import rfft, irfft
 
-def NtoJ(N, pow=2):
-    return 2**np.int(np.ceil(np.log2((pow+1)*N + 1)))
+def NWtoJ(NW, pow=2):
+    return 2**np.int(np.ceil(np.log2((pow+1)*NW + 1)))
 
 class SpecCalc:
 
-    def __init__(self, N, pow=2):
-        self.pow = pow
-        J = NtoJ(N, pow)
-        self.J = J
-#        if not (isinstance(N, int) and (0 < N < J/2)):
-#            self.N = (J-1)//3
-#        else:
-#            self.N = N
+    def __init__(self, NW, pow=2):
 
-        self.N = N
-        self.N2 = 2*N+1
-        self.k2pi = 2.0*np.pi*np.arange(1.0, self.N+1)
+        self.pow = pow
+        J = NWtoJ(NW, pow)
+        self.J = J
+
+        self.NW = NW
+        self.N2 = 2*NW+1
+        self.k2pi = 2.0*np.pi*np.arange(1.0, self.NW+1)
         self.k2piSecPow = self.zeros(self.N2)
         self.k2piSecPow[1:self.N2:2] = self.k2pi**2
         self.k2piSecPow[2:self.N2:2] = self.k2pi**2
@@ -32,6 +29,9 @@ class SpecCalc:
     def get_x(self):
         return self._x.copy()
 
+    def wave2phys(self,w):
+        return irfft(w,n=self.J)
+        
     def trunc(self, uh, out=None):
         N2 = self.N2
 
@@ -40,10 +40,6 @@ class SpecCalc:
             out = self.zeros()
             ret = out
 
-#            out[:] = uh[:N2]; ret = out
-#        else:
-#            out[:N2] = uh[:N2]
-#            out[N2:] = 0.
         out[:N2] = uh[:N2]
         out[N2:] = 0.0
         return ret
@@ -72,7 +68,7 @@ class SpecCalc:
 
     def sdiff2(self, uh, out=None):
         N2 = self.N2
-        w = self._w[0]
+        #w = self._w[0]
         ret = None
         if not isinstance(out, np.ndarray):
             out = self.zeros()

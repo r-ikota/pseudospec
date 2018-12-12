@@ -6,7 +6,7 @@ import sympy as sy
 from sympy import I, pi, exp
 
 #%%
-sy.var('x y a b', real=True)
+x = sy.var('x', real=True)
 one = sy.sympify(1)
 zero = sy.sympify(0)
 
@@ -86,8 +86,10 @@ for _f in f_coeffs:
 #%%
 fft_coeffs = []
 for _f in f_coeffs:
-    _fft_coeff = []
+    _a = _f.pop(0)
+
+    _fft_coeff = [2.0*(sy.re(_a).evalf())]
     for _ab in _f:
-        _fft_coeff.append(_ab.evalf())
-    _fft_coeff[0] = _fft_coeff[0]*2.0
+        _fft_coeff.append(sy.re(_ab).evalf())
+        _fft_coeff.append(sy.im(_ab).evalf())
     fft_coeffs.append(_fft_coeff)
