@@ -81,7 +81,7 @@ class SpecCalc:
     def fdiff(self, u):
         return (u[2:] - u[:-2])/2.*self.J
 
-    def mult(self, uh, vh, out=None):
+    def mult2(self, uh, vh, out=None):
         N2 = self.N2
 
         ret = None        

@@ -7,6 +7,7 @@ from sympy import I, pi, exp
 
 #%%
 x = sy.var('x', real=True)
+z = sy.var('z', complex=True)
 one = sy.sympify(1)
 zero = sy.sympify(0)
 
@@ -93,3 +94,13 @@ for _f in f_coeffs:
         _fft_coeff.append(sy.re(_ab).evalf())
         _fft_coeff.append(sy.im(_ab).evalf())
     fft_coeffs.append(_fft_coeff)
+
+#%%
+def trunc(f,NW):
+    _fexz = f.expand().subs({phi(1): z})
+    _fout = _fexz.coeff(z,0)
+    for i in range(1,NW+1):
+        _fout += _fexz.coeff(z,i)*phi(i)\
+                    + _fexz.coeff(z,-i)*phi(-i)
+    return _fout
+
