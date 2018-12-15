@@ -44,7 +44,7 @@ class SpecCalc:
         out[N2:] = 0.0
         return ret
 
-    def sdiff(self, uh, out=None):
+    def sdiff1(self, uh, out=None):
         N2 = self.N2
         w = self._w[0]
         ret = None

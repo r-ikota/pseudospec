@@ -7,6 +7,9 @@ import expected_values as ev
 NW = 15
 xsym = sy.var('x', real=True)
 
+fs = ev.fs
+fft_coeffs = ev.fft_coeffs
+
 def test_NtoJ():
     pow = 3
     J = ps.NWtoJ(NW, pow=3)
@@ -36,7 +39,7 @@ def test_each_funcs():
     pow = 1
     sc = ps.SpecCalc(NW,pow)
     
-    for i in range(len(ev.fs)):
+    for i in range(len(fs)):
         yield check_each_funcs, sc, i
 
 def check_mult2A(sc,fs,fft_coeffs):
@@ -52,8 +55,6 @@ def check_mult2A(sc,fs,fft_coeffs):
     testing.assert_allclose(observed,expected)
 
 def test_mult2A():
-        fs = ev.fs
-        fft_coeffs = ev.fft_coeffs
 
         pow = 2
         sc = ps.SpecCalc(NW,pow)
@@ -82,8 +83,6 @@ def check_mult2B(sc,fs,fft_coeffs):
         testing.assert_allclose(observed,expected)
        
 def test_mult2B():
-        fs = ev.fs
-        fft_coeffs = ev.fft_coeffs
 
         pow = 2
         sc = ps.SpecCalc(NW,pow)
@@ -112,8 +111,6 @@ def check_mult3A(sc,fs,fft_coeffs):
     testing.assert_allclose(observed,expected)
 
 def test_mult3A():
-        fs = ev.fs
-        fft_coeffs = ev.fft_coeffs
 
         pow = 3
         sc = ps.SpecCalc(NW,pow)
@@ -144,8 +141,6 @@ def check_mult3B(sc,fs,fft_coeffs):
 
 
 def test_mult3B():
-        fs = ev.fs
-        fft_coeffs = ev.fft_coeffs
 
         pow = 3
         sc = ps.SpecCalc(NW,pow)
@@ -159,3 +154,74 @@ def test_mult3B():
         for ijk in test_comb:
                 i = ijk[0]; j = ijk[1]; k = ijk[2]
                 yield check_mult3B, sc, [fs[i],fs[j],fs[k]], [fft_coeffs[i], fft_coeffs[j], fft_coeffs[k]]
+
+def check_sdiff1A(sc,f,fft_coeff):
+        _df1 = f.diff(xsym)
+        expected = sym2num(sc,_df1)
+
+        _w = coeff2wave(sc, fft_coeff)
+        observed = sc.wave2phys(sc.sdiff1(_w))
+
+        testing.assert_allclose(observed,expected)
+
+def test_sdiff1A():
+        pow = 1
+        sc = ps.SpecCalc(NW,pow)
+
+        for i in range(len(fs)):
+                yield check_sdiff1A, sc, fs[i], fft_coeffs[i]
+
+
+def check_sdiff1B(sc,f,fft_coeff):
+        _df1 = f.diff(xsym)
+        expected = sym2num(sc,_df1)
+
+        _wh = coeff2wave(sc, fft_coeff)
+        _outh = sc.zeros()
+        sc.sdiff1(_wh, _outh)
+        observed = sc.wave2phys(_outh)
+
+        testing.assert_allclose(observed,expected)
+
+def test_sdiff1B():
+        pow = 1
+        sc = ps.SpecCalc(NW,pow)
+
+        for i in range(len(fs)):
+                yield check_sdiff1B, sc, fs[i], fft_coeffs[i]
+
+
+def check_sdiff2A(sc,f,fft_coeff):
+        _df1 = f.diff(xsym,2)
+        expected = sym2num(sc,_df1)
+
+        _w = coeff2wave(sc, fft_coeff)
+        observed = sc.wave2phys(sc.sdiff2(_w))
+
+        testing.assert_allclose(observed,expected)
+
+def test_sdiff2A():
+        pow = 1
+        sc = ps.SpecCalc(NW,pow)
+
+        for i in range(len(fs)):
+                yield check_sdiff2A, sc, fs[i], fft_coeffs[i]
+
+
+def check_sdiff2B(sc,f,fft_coeff):
+        _df1 = f.diff(xsym,2)
+        expected = sym2num(sc,_df1)
+
+        _wh = coeff2wave(sc, fft_coeff)
+        _outh = sc.zeros()
+        sc.sdiff2(_wh, _outh)
+        observed = sc.wave2phys(_outh)
+
+        testing.assert_allclose(observed,expected)
+
+def test_sdiff2B():
+        pow = 1
+        sc = ps.SpecCalc(NW,pow)
+
+        for i in range(len(fs)):
+                yield check_sdiff2B, sc, fs[i], fft_coeffs[i]
