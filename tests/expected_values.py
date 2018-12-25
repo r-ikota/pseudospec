@@ -20,14 +20,23 @@ def phi(n):
 
 #%%
 
-def coeff2waves(_f):
+def coeff2wave(_f):
     _g = zero
-    for j,c in enumerate(_f):
-        _g += c*phi(j)
-    _g = _g + sy.conjugate(_g)
+    for j,c in enumerate(_f[1:]):
+        _g += c*phi(j+1)
+    _g += sy.conjugate(_g)
+    _g += _f[0]
     return _g
 
+def wave2coeff(_f):
+    _f = _f.expand().subs({phi(1): z}).collect(z)
+    _nw = sy.degree(_f)
+    _coeff = [_f.coeff(z,0)]
+    for i in range(1,_nw+1):
+        _coeff.append(_f.coeff(z,i))
+    return _coeff
 
+    
 #%%
 # f1
 f_coeffs = []
@@ -81,16 +90,16 @@ f_coeffs.append(_f)
 #%%
 fs = []
 for _f in f_coeffs:
-    f = coeff2waves(_f)
+    f = coeff2wave(_f)
     fs.append(f)
 
 #%%
 fft_coeffs = []
 for _f in f_coeffs:
-    _a = _f.pop(0)
+    _a = _f[0]
 
-    _fft_coeff = [2.0*(sy.re(_a).evalf())]
-    for _ab in _f:
+    _fft_coeff = [sy.re(_a).evalf()]
+    for _ab in _f[1:]:
         _fft_coeff.append(sy.re(_ab).evalf())
         _fft_coeff.append(sy.im(_ab).evalf())
     fft_coeffs.append(_fft_coeff)
