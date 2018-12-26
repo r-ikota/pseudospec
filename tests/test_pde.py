@@ -25,14 +25,14 @@ def coeff2wave(sc,coeff):
         w[:N2] = np.asarray(coeff)*J
         return w
 
-def check_exact_sol(pde):
-        assert (pde.LHS - pde.f).simplify()\
-                == zero
+# def check_exact_sol(pde):
+#         assert (pde.LHS - pde.f).simplify()\
+#                 == zero
 
-def test_exact_sol():
-        pdes = [evpde.PDEsol1(K),
-                evpde.PDEsol2(K)]
+# def test_exact_sol():
+#         pdes = [evpde.PDEsol1(K),
+#                 evpde.PDEsol2(K)]
 
-        for pde in pdes:
-                yield check_exact_sol, pde
+#         for pde in pdes:
+#                 yield check_exact_sol, pde
 

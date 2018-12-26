@@ -52,7 +52,6 @@ class PDEsol():
         self.ic = None
         self.sol = None
         self.f = None
-        self.LHS = None
 
     def _setIC(self):
         self.ic = self.sol.subs({t: zero})
@@ -70,41 +69,60 @@ class PDEsol():
         return _numf
 
 class PDEsol1(PDEsol):
-    def __init__(self,N):
+    def __init__(self,K):
         sol = zero
-        for n in range(1,N+1):
-            _wave = exp(-n)*(one + sin(n*pi/3))\
-                    *phi(n)
-            sol += _wave*exp(-4*pi**2*n**2*t)
+        for k in range(1,K+1):
+            _wave = exp(-k)*(one + sin(k*pi/3))\
+                    *phi(k)
+            sol += _wave*exp(-4*pi**2*k**2*t)
         sol += sy.conjugate(sol)
         sol += one
         self.sol = sol
-        self.f = zero
-        self.LHS = (sol.diff(t) - sol.diff(x,2)).simplify()
+        self.f = (sol.diff(t) - sol.diff(x,2)).simplify()
 
         self._setIC()
 
 class PDEsol2(PDEsol):
-    def __init__(self,N):
+    def __init__(self,K):
         sol = zero
-        f = zero
-        for n in range(1,N+1):
-            omegan = sin(n*pi/4)
-            fn = exp(-n)
-            _wave = fn/(4*pi**2*n**2 + I*omegan)*\
-                    phi(n)
+        for k in range(1,K+1):
+            omegan = sin(k*pi/4)
+            fn = exp(-k)
+            _wave = fn/(4*pi**2*k**2 + I*omegan)*\
+                    phi(k)
             sol += _wave*exp(I*omegan*t)
-            f += fn*exp(I*omegan*t)*phi(n)
         sol += sy.conjugate(sol)
-        f += sy.conjugate(f)
         sol += one
         self.sol = sol
-        self.f = f
-        self.LHS = (sol.diff(t) - sol.diff(x,2)).simplify()
+        self.f = (sol.diff(t) - sol.diff(x,2)).simplify()
 
         self._setIC()
     
+class PDEsol3(PDEsol):
+    def __init__(self,K):
+        sol = zero
+        for k in range(1,K+1):
+            omegan = 2*pi/k**2
+            sol += exp(I*omegan*t)/k*phi(k)
+        sol += sy.conjugate(sol)
+        sol += one
+        self.sol = sol
+        
+        g = exp(2*pi*I*t)*phi(2)
+        g += sy.conjugate(g)
+        self.g = g
+        self.f =\
+                (sol.diff(t)\
+                    -   (sol.diff(x) - g*sol\
+                        ).diff(x)
+                ).simplify()
 
+        self._setIC()
+
+    def getNumG(self):
+        _numg = sy.lambdify((t,x), self.g)
+        return _numg
+    
 
 
 
