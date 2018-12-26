@@ -1,11 +1,11 @@
 import numpy as np 
 import h5py
-from speceq import SpecEQ
+from pseudospec import SpecEQ
 
 
 class FHN(SpecEQ):
-    def __init__(self, N, pow=3, **par):
-        SpecEQ.__init__(self, N, pow=pow, **par)
+    def __init__(self, N, NC=2, pow=3, **par):
+        SpecEQ.__init__(self, N, NC=NC, pow=pow, **par)
         self._w = np.zeros((3, self.N2))
         self._paramNames = ('a', 'eps', 'gamma', 'Du', 'Dv')
         self._paramDefault = [0.25, 0.05, 3.0, 4.0e-5, 1.0e-7]
@@ -39,9 +39,9 @@ class FHN(SpecEQ):
 
 class BZ(SpecEQ):
 
-    def __init__(self, N, pow=2, **par):
+    def __init__(self, N, NC=3, pow=2, **par):
 #        setDefault2Par(bz_pardefaults, par)
-        SpecEQ.__init__(self, N, pow, **par)
+        SpecEQ.__init__(self, N,NC, pow, **par)
         self._w = np.zeros((3,self.N2))
         
         self._paramNames = ('e', 'ep', 'q', 'f', 'Du', 'Dv', 'Dw')
@@ -70,8 +70,8 @@ class BZ(SpecEQ):
         # calc dudt
         #_w[0][:] = u
         sc.sdiff2(u, _w[0])
-        sc.mult(u,v,_w[1])
-        sc.mult(u, (self.One - u), _w[2])
+        sc.mult2(u,v,_w[1])
+        sc.mult2(u, (self.One - u), _w[2])
         dudt[:] = Du*_w[0] + inve*(q*v - _w[1] + _w[2])
 
         # calc dvdt

@@ -8,9 +8,10 @@ def setDefault2Par(d, par):
             par[k] = d[k]
 
 class SpecEQ():
-    def __init__(self, N, pow=2, **par):
+    def __init__(self, N, NC = 1, pow=2, **par):
         '''
         N: the number of waves
+        NC: the number of unknown variables
         pow: the highest degree of the polynomials in nonlinear terms
 
         self._paramNames: tuple
@@ -19,6 +20,7 @@ class SpecEQ():
         
         self.N = N
         self.N2 = 2*N + 1
+        self.NC = NC
         self.sc = sl.SpecCalc(N, pow)
         self.J = self.sc.J
         self.get_x = self.sc.get_x
@@ -37,8 +39,9 @@ class SpecEQ():
     def getParamDefault(self):
         return self._paramDefault.copy()
 
-    def evolve(self, fh, eq, atrange, args=(), NTlump=100):
+    def evolve(self, fh, atrange, args=(), NTlump=100):
         dt = fh['dt'][()]
+        eq = self.eq
 
         trange_dset = fh['trange']
         last_t = trange_dset[-1]
@@ -108,15 +111,14 @@ class SpecEQ():
 
         return sl.irfft(Uresh, self.J)
 
-    def reshapeTS(self, U, numvar, Nt):
+    def reshapeTS(self, U, Nt):
         '''
         To reshape a time series wave datum U
-        U(Nt, numvar*N2): wave data
-        numvar: the number of the components of the variables
+        U(Nt, NC*N2): wave data
         Nt: the number of the time points
         '''
         
-        return U.reshape((Nt, numvar, self.N2))
+        return U.reshape((Nt, self.NC, self.N2))
 
 
     def timeArrange(self, trange, dt, NTlump):
@@ -174,9 +176,9 @@ class SpecEQ():
 
     def mkInitDataSet(self, u, fh, dt, args=()):
         dataset = fh.create_dataset(
-            'u', (1, self.N2),
+            'u', (1, self.NC*self.N2),
             dtype='float32', 
-            maxshape=(None, self.N2)
+            maxshape=(None, self.NC*self.N2)
             )
         dataset[0,:] = u
         ds_trange = fh.create_dataset(
