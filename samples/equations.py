@@ -86,8 +86,33 @@ class BZ(SpecEQ):
 
         return ret
 
+class KS(SpecEQ):
+    def __init__(self, N, NC=1, pow=2, **par):
+        SpecEQ.__init__(self, N, NC=NC, pow=pow, **par)
+        self._w = np.zeros((3, self.N2))
+        self._paramNames = ('nu', 'L')
+        self._paramDefault = [1.0, 22.0]
 
+    def eq(self, u, t, nu, L):
+        '''
+        du/dt = -[nu L**(-4) u_xxxx + L**(-2)u_xx
+                    + 1/(2L) (u**2)_x]
+        '''
 
+        sc = self.sc
+        N2 = self.N2
 
+        _w = self._w
+
+        ret = np.zeros(N2)
+
+        sc.sdiff2(u, _w[0])
+        sc.sdiff2(_w[0], _w[1])
+        sc.mult2(u,u,_w[2])
+        sc.sdiff1(_w[2], _w[2])
+
+        ret[:] = -nu*L**(-4)*_w[1] - L**(-2)*_w[0] - _w[2]/2.0/L
+
+        return ret
 
 
