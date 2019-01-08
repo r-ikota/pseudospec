@@ -31,6 +31,9 @@ class SpecCalc:
 
     def wave2phys(self,w):
         return irfft(w,n=self.J)
+    
+    def phys2wave(self,u):
+        return self.trunc(rfft(u))
         
     def trunc(self, uh, out=None):
         N2 = self.N2
