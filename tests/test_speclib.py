@@ -225,3 +225,25 @@ def test_sdiff2B():
 
         for i in range(len(fs)):
                 yield check_sdiff2B, sc, fs[i], fft_coeffs[i]
+
+def test_truncA():
+        sc = ps.SpecCalc(NW, pow=3)
+        J = sc.J
+        N2 = sc.N2
+        z = np.random.random((2,3,J))
+        observed = sc.trunc(z)
+        expected = z[:,:,:N2]
+        testing.assert_allclose(observed, expected)
+
+def test_truncB():
+        sc = ps.SpecCalc(NW, pow=3)
+        J = sc.J
+        N2 = sc.N2
+        z = np.random.random((2,3,J))
+        expected = np.zeros((2,3,J))
+        expected[:,:,:N2] = z[:,:,:N2]
+
+        observed = np.ones((2,3,J))
+        sc.trunc(z, observed)
+        testing.assert_allclose(observed, expected)        
+

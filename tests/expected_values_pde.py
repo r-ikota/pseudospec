@@ -12,9 +12,7 @@ one = sy.sympify(1)
 zero = sy.sympify(0)
 
 #%%
-sy.exp(x**2)
 
-#%%
 def phi(n):
     return exp(2*pi*I*n*x)
 
@@ -86,8 +84,8 @@ class PDEsol2(PDEsol):
     def __init__(self,K):
         sol = zero
         for k in range(1,K+1):
-            omegan = sin(k*pi/4)
-            fn = exp(-k)
+            omegan = 5*k*pi/7
+            fn = 2*one/k
             _wave = fn/(4*pi**2*k**2 + I*omegan)*\
                     phi(k)
             sol += _wave*exp(I*omegan*t)
@@ -99,29 +97,29 @@ class PDEsol2(PDEsol):
         self._setIC()
     
 class PDEsol3(PDEsol):
-    def __init__(self,K):
+    def __init__(self):
+
         sol = zero
-        for k in range(1,K+1):
-            omegan = 2*pi/k**2
-            sol += exp(I*omegan*t)/k*phi(k)
+
+        sol = exp(I*3*t)*phi(1)/8 + exp(I*t)*phi(3)/4
         sol += sy.conjugate(sol)
         sol += one
+
+        a = exp(2*pi*I*t)*phi(2)
+        a += sy.conjugate(a)
+
+        f = sol.diff(t) - (sol.diff(x) - a*sol).diff(x)
+
+    
         self.sol = sol
-        
-        g = exp(2*pi*I*t)*phi(2)
-        g += sy.conjugate(g)
-        self.g = g
-        self.f =\
-                (sol.diff(t)\
-                    -   (sol.diff(x) - g*sol\
-                        ).diff(x)
-                ).simplify()
+        self.a = a
+        self.f = f
 
         self._setIC()
 
-    def getNumG(self):
-        _numg = sy.lambdify((t,x), self.g)
-        return _numg
+    def getNumA(self):
+        _numa = sy.lambdify((t,x), sy.re(self.a), 'numpy')
+        return _numa
     
 
 

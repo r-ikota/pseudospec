@@ -37,14 +37,19 @@ class SpecCalc:
         
     def trunc(self, uh, out=None):
         N2 = self.N2
-
+        s = list(uh.shape)
+        s[-1] = N2
+        index = [slice(None)]*len(s)
+        index[-1] = slice(N2)
         ret = None
         if not isinstance(out, np.ndarray):
-            out = self.zeros()
+            out = np.zeros(s, uh.dtype.char)
             ret = out
 
-        out[:N2] = uh[:N2]
-        out[N2:] = 0.0
+        out[:] = 0.0
+        # out[:N2] = uh[:N2]
+        # out[N2:] = 0.0
+        out[index] = uh[index]
         return ret
 
     def sdiff1(self, uh, out=None):
