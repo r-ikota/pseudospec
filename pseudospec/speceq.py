@@ -85,21 +85,6 @@ class SpecEQ():
     def eq(self):
         pass
 
-    # def mkDataGen4viz(self, U, numvar, Nt):
-    #     '''
-        # To make a data generator for visualization
-        # U(Nt, numvar*N2): wave data
-        # numvar: the number of the components of the variables
-        # Nt: the number of the time points
-        # '''
-        # UU = self.ReshapeTS(U, numvar, Nt)
-        # uu = self.mkPhysData(UU)
-
-        # def data_gen(i):
-        #     return UU[i], uu[i]
-
-        # return data_gen
-
             
 
 

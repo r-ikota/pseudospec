@@ -36,17 +36,6 @@ def coeff2wave(sc,coeff):
         w[:N2] = np.asarray(coeff)*J
         return w
 
-# def check_exact_sol(pde):
-#         assert (pde.LHS - pde.f).simplify()\
-#                 == zero
-
-# def test_exact_sol():
-#         pdes = [evpde.PDEsol1(K),
-#                 evpde.PDEsol2(K)]
-
-#         for pde in pdes:
-#                 yield check_exact_sol, pde
-
 class Heat(SpecEQ):
     def __init__(self, N, NC=1, pow=1, **par):
         SpecEQ.__init__(self, N, NC=NC, pow=pow, **par)
@@ -114,7 +103,7 @@ tmpdir = tempfile.gettempdir()
 def check_pde(pde,expected_sol):
     try:
         tmpfname = os.path.join(tmpdir, 'test.hdf5')
-        #tmpfname = 'test.hdf5'
+        
         x = pde.get_x()
         _ic = pde.sc.phys2wave(expected_sol(0.0, x))
         with h5py.File(tmpfname, 'w') as fh:
@@ -139,5 +128,5 @@ def test_pde():
  
     for pde, exsol in zip(pdes, expected_sols_n):
         yield check_pde, pde, exsol
-   # check_pde(heat, expected_sols_n[0])
+   
 

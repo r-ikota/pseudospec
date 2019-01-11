@@ -54,10 +54,6 @@ class PDEsol():
     def _setIC(self):
         self.ic = self.sol.subs({t: zero})
 
-    # def getNumIC(self):
-    #     _numic = sy.lambdify(x, self.ic)
-    #     return _numic
-
     def getNumSol(self):
         _numsol = sy.lambdify((t,x), sy.re(self.sol), 'numpy')
         return _numsol

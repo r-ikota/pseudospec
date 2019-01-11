@@ -59,8 +59,6 @@ class SpecCalc:
         if not isinstance(out, np.ndarray):
             out = self.zeros()
             ret = out
-#        else:
-#            w[:] = 0.
 
         # Real Part of G
         w[0] = 0.0
@@ -76,7 +74,7 @@ class SpecCalc:
 
     def sdiff2(self, uh, out=None):
         N2 = self.N2
-        #w = self._w[0]
+       
         ret = None
         if not isinstance(out, np.ndarray):
             out = self.zeros()
@@ -107,7 +105,7 @@ class SpecCalc:
         irfft(wh2, overwrite_x = True)
         np.multiply(wh1, wh2, wh3)
         rfft(wh3, overwrite_x = True)
-#        ret[:] = wh3[:N2]
+
         out[:N2] = wh3[:N2]
         out[N2:] = 0.0
 
@@ -126,7 +124,7 @@ class SpecCalc:
         wh1 = self._w[0]; wh1[N2:] = 0.0; wh1[:N2] = uh[:N2]
         wh2 = self._w[1]; wh2[N2:] = 0.0; wh2[:N2] = vh[:N2] 
         wh3 = self._w[2]; wh3[N2:] = 0.0; wh3[:N2] = wh[:N2]
-#        wh4 = self._w[3]        
+   
 
         irfft(wh1, overwrite_x = True)
         irfft(wh2, overwrite_x = True)
@@ -136,7 +134,7 @@ class SpecCalc:
         np.multiply(wh2, wh3, wh3)
 
         rfft(wh3, overwrite_x = True)
-#        ret[:] = wh3[:N2]
+
         out[:N2] = wh3[:N2]
         out[N2:] = 0.0
 
