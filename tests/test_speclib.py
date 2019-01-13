@@ -2,7 +2,7 @@ import numpy as np
 from numpy import testing
 import sympy as sy
 import pseudospec as ps
-import expected_values as ev
+import tests.expected_values as ev
 
 NW = 15
 xsym = sy.var('x', real=True)

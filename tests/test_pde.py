@@ -2,8 +2,8 @@ import numpy as np
 from numpy import testing
 import sympy as sy
 import pseudospec as ps
-import expected_values_pde as evpde
-from expected_values_pde import t,  zero, one
+import tests.expected_values_pde as evpde
+from tests.expected_values_pde import t,  zero, one
 from pseudospec import SpecEQ
 import tempfile, h5py, os
 

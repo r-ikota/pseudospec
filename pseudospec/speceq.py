@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.integrate import odeint
-import pseudospec.speclib as sl
+from scipy.fftpack import rfft, irfft
+from .speclib import SpecCalc
 
 def setDefault2Par(d, par):
     for k in d:
@@ -21,7 +22,7 @@ class SpecEQ():
         self.N = N
         self.N2 = 2*N + 1
         self.NC = NC
-        self.sc = sl.SpecCalc(N, pow)
+        self.sc = SpecCalc(N, pow)
         self.J = self.sc.J
         self.get_x = self.sc.get_x
         self._par = par
@@ -94,7 +95,7 @@ class SpecEQ():
         Uresh: reshaped data
         '''
 
-        return sl.irfft(Uresh, self.J)
+        return irfft(Uresh, self.J)
 
     def reshapeTS(self, U, Nt):
         '''
