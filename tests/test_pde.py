@@ -42,7 +42,7 @@ class Heat(SpecEQ):
         self._paramNames = ()
         self._paramDefault = []
 
-    def eq(self, u, t):
+    def eq(self, t, u):
         '''
         du/dt = u_xx
         '''
@@ -62,7 +62,7 @@ class HeatNH(SpecEQ):
         self.x = self.sc.get_x()
 
 
-    def eq(self, u, t):
+    def eq(self, t, u):
         '''
         du/dt = u_xx + f
         '''
@@ -84,7 +84,7 @@ class AdvDiff(SpecEQ):
         self._a = _exsol.getNumA()
         self.x = self.sc.get_x()
 
-    def eq(self,u,t):
+    def eq(self,t,u):
         '''
         du/dt = (u_x - a*u)_x + f
         '''

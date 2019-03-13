@@ -10,11 +10,13 @@ class FHN(SpecEQ):
         self._paramNames = ('a', 'eps', 'gamma', 'Du', 'Dv')
         self._paramDefault = [0.25, 0.05, 3.0, 4.0e-5, 1.0e-7]
 
-    def eq(self, uv, t, a, eps, gamma, Du, Dv):
+    def eq(self, t, uv):
         '''
         du/dt = Du u_xx + (u(1-u)(u-a) - v)/eps
         dv/dt = Dv v_xx + eps(u - gamma v)
         '''
+
+        a, eps, gamma, Du, Dv = self.getArgs()
 
         sc = self.sc
         N2 = self.N2
@@ -45,12 +47,13 @@ class KS(SpecEQ):
         self._paramNames = ('nu', 'L')
         self._paramDefault = [1.0, 22.0]
 
-    def eq(self, u, t, nu, L):
+    def eq(self, t, u):
         '''
         du/dt = -[nu L**(-4) u_xxxx + L**(-2)u_xx
                     + 1/(2L) (u**2)_x]
         '''
 
+        nu, L = self.getArgs()
         sc = self.sc
         N2 = self.N2
 

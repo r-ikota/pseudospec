@@ -34,7 +34,8 @@ def wave2coeff(_f):
         _coeff.append(_f.coeff(z,i))
     return _coeff
 
-    
+def sym2numfuc(args, sfun):
+    return sy.lambdify(args, sy.re(sy.expand_complex(sfun)), "numpy")
 
 #%%
 def trunc(f,NW):
@@ -55,11 +56,13 @@ class PDEsol():
         self.ic = self.sol.subs({t: zero})
 
     def getNumSol(self):
-        _numsol = sy.lambdify((t,x), sy.re(self.sol), 'numpy')
+        # _numsol = sy.lambdify((t,x), sy.re(self.sol), 'numpy')
+        _numsol = sym2numfuc((t,x), self.sol)
         return _numsol
 
     def getNumF(self):
-        _numf = sy.lambdify((t,x), sy.re(self.f), 'numpy')
+        # _numf = sy.lambdify((t,x), sy.re(self.f), 'numpy')
+        _numf = sym2numfuc((t,x), self.f)
         return _numf
 
 class PDEsol1(PDEsol):
@@ -104,7 +107,7 @@ class PDEsol3(PDEsol):
         a = exp(2*pi*I*t)*phi(2)
         a += sy.conjugate(a)
 
-        f = sol.diff(t) - (sol.diff(x) - a*sol).diff(x)
+        f = (sol.diff(t) - (sol.diff(x) - a*sol).diff(x)).simplify()
 
     
         self.sol = sol
@@ -114,7 +117,8 @@ class PDEsol3(PDEsol):
         self._setIC()
 
     def getNumA(self):
-        _numa = sy.lambdify((t,x), sy.re(self.a), 'numpy')
+        # _numa = sy.lambdify((t,x), sy.re(self.a), 'numpy')
+        _numa = sym2numfuc((t,x), self.a)
         return _numa
     
 

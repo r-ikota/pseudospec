@@ -49,7 +49,7 @@ class SpecCalc:
         out[:] = 0.0
         # out[:N2] = uh[:N2]
         # out[N2:] = 0.0
-        out[index] = uh[index]
+        out[tuple(index)] = uh[tuple(index)]
         return ret
 
     def sdiff1(self, uh, out=None):

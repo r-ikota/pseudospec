@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.integrate import odeint
+from scipy.integrate import solve_ivp
 from scipy.fftpack import rfft, irfft
 from .speclib import SpecCalc
 
@@ -40,7 +40,8 @@ class SpecEQ():
     def getParamDefault(self):
         return self._paramDefault.copy()
 
-    def evolve(self, fh, atrange, args=(), NTlump=100):
+    def evolve(self, fh, atrange, args=()):
+        self._setArgs(args)
         dt = fh['dt'][()]
         eq = self.eq
 
@@ -61,7 +62,8 @@ class SpecEQ():
                 maxshape=(None, 2),
                 dtype=np.float64
             )
-        t_hist_dset[-1] = [ctrange[0], ctrange[-1]]
+        t_span = (ctrange[0], ctrange[-1])
+        t_hist_dset[-1] = t_span
 
 
         u_dset = fh['u']
@@ -69,19 +71,20 @@ class SpecEQ():
         u0[:] = u_dset[-1,:]        
         u_dset.resize(last_idx + size_append, axis=0)
         
-        
+        sol = solve_ivp(
+            eq, 
+            t_span,
+            u0,
+            t_eval=ctrange,
+            max_step = dt
+        )
+        u_dset[last_idx:] = np.transpose(sol.y)[1:]
 
-        tno = self.timeArrange(ctrange, dt, NTlump)
-        subTranges = self.getSubTRanges(*tno)
+    def _setArgs(self, args):
+        self._args = tuple(args)
 
-        for strange, subidx in subTranges:
-            u = odeint(eq, u0, strange, args=args)
-            numadd = len(subidx)
-            
-            if numadd > 0:
-                u_dset[last_idx:last_idx + numadd] = u[subidx]
-                last_idx += numadd
-            u0[:] = u[-1]
+    def getArgs(self):
+        return self._args
 
     def eq(self):
         pass
@@ -107,58 +110,6 @@ class SpecEQ():
         return U.reshape((Nt, self.NC, self.N2))
 
 
-    def timeArrange(self, trange, dt, NTlump):
-        '''
-        Arguments
-            trange: 
-                1D array; time grid points where data are picked
-
-            dt: 
-                time incriment for computation
-
-            NTlump: 
-                the number of time points during which 
-                one round computation is performed
-
-        Returned
-            trange_calc:
-                time grid points over which computation is performed
-
-            NNTsep:
-                separation indices where trange_calc is divided
-
-            org2argd:
-                indices of trange_calc 
-                which the original time grid points correspond
-        '''
-
-        Ndt = np.max((np.int((trange[1] - trange[0])/dt), 1))
-        NumDiv = Ndt*(len(trange)-1)
-        trange_calc = np.linspace(
-                trange[0], trange[-1], NumDiv + 1)
-        
-        NNT = np.arange(NumDiv + 2)
-        NNTsep = NNT[::NTlump]
-        NNTsep[-1] = NumDiv + 1
-        
-        org2argd = Ndt*np.arange(len(trange)) #original to arranged
-        
-        return trange_calc, NNTsep, org2argd
-
-
-    def getSubTRanges(self, trange_calc, NNTsep, org2argd):
-        NumDiv = len(trange_calc)
-        subTranges = []
-        for nstart in range(len(NNTsep)-1):
-            s_index = NNTsep[nstart]
-            e_index = np.min((NNTsep[nstart+1]+1, NumDiv))
-
-            suborgidx = org2argd[
-                    (s_index < org2argd) * (org2argd < e_index)
-                    ] - s_index
-
-            subTranges.append((trange_calc[s_index:e_index], suborgidx))
-        return subTranges
 
     def mkInitDataSet(self, u, fh, dt, args=()):
         dataset = fh.create_dataset(
@@ -172,6 +123,7 @@ class SpecEQ():
             dtype='float64',
             maxshape=(None,)
         )
+        ds_trange[0] = 0.0
         fh['dt'] = dt
         fh['N'] = self.N
         fh['J'] = self.J
