@@ -45,7 +45,6 @@ class SpecEQ():
         keyargs: options except max_step that are passed to solve_ivp
         '''
 
-        self._setArgs(args)
         maxdt = fh['maxdt'][()]
         eq = self.eq
 
@@ -89,7 +88,7 @@ class SpecEQ():
             t_span = (ctrange[s], ctrange[e])
             t_eval = ctrange[s: e+1]
             sol = solve_ivp(
-                eq, 
+                lambda t, u: eq(t, u, *args), 
                 t_span,
                 u0,
                 t_eval=t_eval,
@@ -100,13 +99,8 @@ class SpecEQ():
             u_dset[lidx + s + 1: lidx + e + 1] = u_extd[1:]
             u0[:] = u_extd[-1]
 
-    def _setArgs(self, args):
-        self._args = tuple(args)
 
-    def getArgs(self):
-        return self._args
-
-    def eq(self):
+    def eq(self, t, u, *args):
         pass
 
             
