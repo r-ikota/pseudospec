@@ -10,7 +10,6 @@ import tempfile, h5py, os
 
 NW = 50
 K = 5
-maxdt = 5.0e-3
 trange = np.linspace(0.0, 1.0, 21)
 xsym = sy.var('x', real=True)
 
@@ -107,8 +106,8 @@ def check_pde(pde,expected_sol):
         x = pde.get_x()
         _ic = pde.sc.phys2wave(expected_sol(0.0, x))
         with h5py.File(tmpfname, 'w') as fh:
-            pde.mkInitDataSet(_ic,fh,maxdt)
-            pde.evolve(fh, trange)
+            pde.mkInitDataSet(_ic,fh)
+            pde.evolve(fh, trange, max_step=1.0e-4, method='BDF')
             observed_w = fh['u'][()]
         
         observed = pde.sc.wave2phys(observed_w)

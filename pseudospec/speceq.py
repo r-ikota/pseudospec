@@ -45,7 +45,6 @@ class SpecEQ():
         keyargs: options except max_step that are passed to solve_ivp
         '''
 
-        maxdt = fh['maxdt'][()]
         eq = self.eq
 
         trange_dset = fh['trange']
@@ -92,7 +91,6 @@ class SpecEQ():
                 t_span,
                 u0,
                 t_eval=t_eval,
-                max_step = maxdt,
                 **keyargs
             )
             u_extd = np.transpose(sol.y)
@@ -125,7 +123,7 @@ class SpecEQ():
 
 
 
-    def mkInitDataSet(self, u, fh, maxdt, args=()):
+    def mkInitDataSet(self, u, fh, args=()):
         dataset = fh.create_dataset(
             'u', (1, self.NC*self.N2),
             dtype='float32', 
@@ -138,7 +136,6 @@ class SpecEQ():
             maxshape=(None,)
         )
         ds_trange[0] = 0.0
-        fh['maxdt'] = maxdt
         fh['N'] = self.N
         fh['J'] = self.J
         if args: fh['args'] = args
