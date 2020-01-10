@@ -4,7 +4,7 @@
 BSD
 
 ## Install
-  python setup.py Install
+  python setup.py install
 
 ## Uninstall
 For unix
@@ -23,4 +23,12 @@ For Windows
 
 
 
- 
+## Docker
+At the project root, 
+
+    $ docker-compose up
+
+To stop and remove the container,
+
+    $ docker-compose down
+    
