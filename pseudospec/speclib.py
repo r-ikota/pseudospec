@@ -1,141 +1,301 @@
 from __future__ import division
 import numpy as np
-from scipy.fftpack import rfft, irfft
+from scipy.fft import rfft, irfft, next_fast_len
 
-def NWtoJ(NW, pow=2):
-    return 2**np.int(np.ceil(np.log2((pow+1)*NW + 1)))
 
 class SpecCalc:
 
-    def __init__(self, NW, pow=2):
+    """
+    A class for pseudo-spectral method.
+    Functions treated are assumed to be real-valued.
 
-        self.pow = pow
-        J = NWtoJ(NW, pow)
+    Arguments for instantiation
+    ---------------------------
+    NW: int
+        The truncation wave number.
+
+    Attributes
+    ----------
+    NW: int
+        The truncation wave number.
+    NWrsize: int
+        The size of wave data in the real format, that is, NWrsize = 2*NW + 1.
+        If u = sum(n=-N, ..., N) C(N) * exp(2 * pi * i * n * x), then the wave data is stored as (A(0), A(1), A(2), ..., A(N), B(1), ..., B(N)), where A(n) = Re C(n) and B(n) = Im C(n).
+    J: int
+        The size of the wave data in the physical space format.
+        For a real-valued u, the physical space data is (u(x[0]), u(x[1]), ..., u(x[[J-1])).
+    J2: int
+        The size of the wave data in the physical space format for the multiplication of two wave data.
+    J3: int
+        The size of the wave data in the physical space format for the multiplication of three wave data.
+
+    """
+
+    def __init__(self, NW):
+        J = next_fast_len(2 * NW + 1)
+        self.NW = NW
+
+        self.NWrsize = 2 * self.NW + 1
+
         self.J = J
 
-        self.NW = NW
-        self.N2 = 2*NW+1
-        self.k2pi = 2.0*np.pi*np.arange(1.0, self.NW+1)
-        self.k2piSecPow = self.zeros(self.N2)
-        self.k2piSecPow[1:self.N2:2] = self.k2pi**2
-        self.k2piSecPow[2:self.N2:2] = self.k2pi**2
-        self._w = np.zeros((4, J))
-        self._x = np.arange(0., 1., 1./J)
+        J2 = next_fast_len(3 * self.NW + 1)
+        self.J2 = J2
+        J3 = next_fast_len(4 * self.NW + 1)
+        self.J3 = J3
 
-    def zeros(self, K = None):
-        if not K: K = self.N2
-        return np.zeros(K)
+        self._D1factor = 2.0j * np.pi * np.arange(self.NW + 1)
+        self._D2factor = self._D1factor ** 2
+        self._x = np.linspace(0.0, 1.0, J, endpoint=False)
+
+    def get_zero_rwave(self, shape=()):
+        """
+        Returns a zero-padded wave data in the real format.
+
+        Parameters
+        ----------
+        shape: array_like, optional
+
+        Returns
+        -------
+        ret: (shape[0], shape[1], ... , shape[-1], 2*NW + 1) ndarray with the dtype float64.
+            A zero-padded array with the shape list(shape) + [2*NW + 1].
+        """
+        return np.zeros(list(shape) + [self.NWrsize], dtype=np.float64)
+
+    def get_zero_cwave(self, shape=()):
+        """
+        Returns a zero-padded wave data in the complex format.
+
+        Parameters
+        ----------
+        shape: array_like, optional
+
+        Returns
+        -------
+        ret: (shape[0], shape[1], ... , shape[-1], NW + 1) ndarray with the dtype complex128.
+            A zero-padded array with the shape list(shape) + [NW + 1].
+        """
+        return np.zeros(list(shape) + [self.NW + 1], dtype=np.complex128)
+
+    def get_one_cwave(self, shape=()):
+        """
+        Returns a wave data representing the constant function with value one in the complex format.
+
+        Parameters
+        ----------
+        shape: array_like, optional
+
+        Returns
+        -------
+        ret: (shape[0], shape[1], ... , shape[-1], NW + 1) ndarray with the dtype complex128.
+            An array with value one, that is, ret[..., 0] = 1.0 and otherwize = 0.0. Its shape is list(shape) + [NW + 1].
+        """
+        ret = self.get_zero_cwave(shape)
+        ret[..., 0] = 1.0
+        return ret
+
+    def get_zero_pwave(self, shape=()):
+        """
+        Returns a zero-padded wave data in the physical space.
+
+        Parameters
+        ----------
+        shape: array_like, optional
+
+        Returns
+        -------
+        ret: (shape[0], shape[1], ... ,shape[-1], J) ndarray with the dtype complex128.
+            A zero-padded array with the shape list(shape) + [NW + 1].        
+        """
+        return np.zeros(list(shape) + [self.J], dtype=np.float64)
+
+    def wconvert_r2c(self, wr):
+        """
+        Converts wave data from the real format to the complex format.
+
+        Parameters
+        ----------
+        wr: (M1, M2, ..., Md, 2*NW + 1) real ndarray 
+            Input wave data in the real format.
+
+        Return
+        ------
+        wc: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
+        """
+        wc = self.get_zero_cwave(wr.shape[:-1])
+        wc[..., 0] = wr[..., 0]
+        wc[..., 1:] = wr[..., 1 : self.NW + 1] + 1.0j * wr[..., self.NW + 1 :]
+        return wc
+
+    def wconvert_c2r(self, wc):
+        """
+        Converts wave data from the real format to the complex format.
+
+        Parameters
+        ----------
+        wc: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
+
+        Return
+        ------
+        wr: (M1, M2, ..., Md, 2*NW + 1) real ndarray 
+            Input wave data in the real format.
+        """
+        wr = self.get_zero_rwave(wc.shape[:-1])
+        wr[..., 0] = np.real(wc[..., 0])
+        wr[..., 1 : self.NW + 1] = np.real(wc[..., 1:])
+        wr[..., self.NW + 1 :] = np.imag(wc[..., 1:])
+        return wr
 
     def get_x(self):
+        """
+        Returns the x-grid points in the physical space.
+        """
         return self._x.copy()
 
-    def wave2phys(self,w):
-        return irfft(w,n=self.J)
-    
-    def phys2wave(self,u):
-        return self.trunc(rfft(u))
-        
-    def trunc(self, uh, out=None):
-        N2 = self.N2
-        s = list(uh.shape)
-        s[-1] = N2
-        index = [slice(None)]*len(s)
-        index[-1] = slice(N2)
-        ret = None
-        if not isinstance(out, np.ndarray):
-            out = np.zeros(s, uh.dtype.char)
-            ret = out
+    def transform_wc2wp(self, wc):
+        """
+        Transforms a complex wave data to a physical space wave data.
 
-        out[:] = 0.0
-        # out[:N2] = uh[:N2]
-        # out[N2:] = 0.0
-        out[tuple(index)] = uh[tuple(index)]
-        return ret
+        Parameters
+        ----------
+        wc: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
 
-    def sdiff1(self, uh, out=None):
-        N2 = self.N2
-        w = self._w[0]
-        ret = None
-        if not isinstance(out, np.ndarray):
-            out = self.zeros()
-            ret = out
+        Returns
+        -------
+        wp: (M1, M2, ..., Md, J) real ndarray 
+            Input wave data in the real format.
 
-        # Real Part of G
-        w[0] = 0.0
-        w[1:N2:2] = -self.k2pi*uh[2:N2:2]
 
-    
-        # Imaginary Part of G
-        w[2:N2:2] = self.k2pi*uh[1:N2:2]
+        Note
+        ----
+        Expept for the last axis, the shapes of wr and wc are the same.
+        """
+        return irfft(wc * self.J, n=self.J)
 
-        out[:N2] = w[:N2]
-        out[N2:] = 0.0
-        return ret
+    def transform_wp2wc(self, wp):
+        """
+        Transforms a physical space wave data to a complex wave data.
 
-    def sdiff2(self, uh, out=None):
-        N2 = self.N2
-       
-        ret = None
-        if not isinstance(out, np.ndarray):
-            out = self.zeros()
-            ret = out
+        Parameters
+        ----------
+        wp: (M1, M2, ..., Md, J) real ndarray 
+            Input wave data in the real format.
 
-        out[:N2] = -self.k2piSecPow*uh[:N2]
-        out[N2:] = 0.0
-        return ret
+        Returns
+        -------
+        wc: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
+
+
+        Note
+        ----
+        Expept for the last axis, the shapes of wr and wc are the same.
+        """
+        ret = rfft(wp) / wp.shape[-1]
+        return np.array(ret[..., : self.NW + 1])
+
+    def sdiff1(self, wc_in):
+        """
+        Differentiates a wave data once.
+
+        Parameters
+        ----------
+        wc_in: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array to be differentiated.
+
+        Returns
+        -------
+        wc_out: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
+        """
+
+        return wc_in * self._D1factor
+
+    def sdiff2(self, wc_in):
+        """
+        Differentiates a wave data twice.
+
+        Parameters
+        ----------
+        wc_in: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array to be differentiated.
+
+        Returns
+        -------
+        wc_out: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
+        """
+
+        return wc_in * self._D2factor
+
+    def sdiff(self, wc_in, k):
+        """
+        Computes a given order derivative of a wave data .
+
+        Parameters
+        ----------
+        wc_in: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array to be differentiated.
+        k: int
+            The order of the differentiation.
+
+        Returns
+        -------
+        wc_out: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
+        """
+
+        return wc_in * self._D1factor ** k
 
     def fdiff(self, u):
-        return (u[2:] - u[:-2])/2.*self.J
-
-    def mult2(self, uh, vh, out=None):
-        N2 = self.N2
-
-        ret = None        
-        if not isinstance(out, np.ndarray):
-            out = self.zeros() 
-            ret = out
-
-
-        wh1 = self._w[0]; wh1[N2:] = 0.0; wh1[:N2] = uh[:N2]
-        wh2 = self._w[1]; wh2[N2:] = 0.0; wh2[:N2] = vh[:N2]
-        wh3 = self._w[2]
-
-         
-        irfft(wh1, overwrite_x = True)
-        irfft(wh2, overwrite_x = True)
-        np.multiply(wh1, wh2, wh3)
-        rfft(wh3, overwrite_x = True)
-
-        out[:N2] = wh3[:N2]
-        out[N2:] = 0.0
-
-        return ret
+        """
+        Differentiates a physical space wave data with the central difference.
         
+        """
+        return (u[..., 2:] - u[..., :-2]) / 2.0 * self.J
 
-    def mult3(self, uh, vh, wh, out=None):
-        N2 = self.N2
+    def mult2(self, wc_in1, wc_in2):
+        """
+        Multiply two wave data in the complex format.
 
-        ret = None        
-        if not isinstance(out, np.ndarray):
-            out = self.zeros() 
-            ret = out
+        Parameters
+        ----------
+        wc_in1, wc_in2: (M1, M2, ..., Md, NW + 1) complex ndarray
+            Wave data to be multiplied.
 
+        Returns
+        -------
+        wc_out: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
+        """
 
-        wh1 = self._w[0]; wh1[N2:] = 0.0; wh1[:N2] = uh[:N2]
-        wh2 = self._w[1]; wh2[N2:] = 0.0; wh2[:N2] = vh[:N2] 
-        wh3 = self._w[2]; wh3[N2:] = 0.0; wh3[:N2] = wh[:N2]
-   
+        product_phys = irfft(wc_in1 * self.J2, n=self.J2) * irfft(
+            wc_in2 * self.J2, n=self.J2
+        )
+        return np.array(rfft(product_phys)[..., : self.NW + 1] / self.J2)
 
-        irfft(wh1, overwrite_x = True)
-        irfft(wh2, overwrite_x = True)
-        irfft(wh3, overwrite_x = True)
+    def mult3(self, wc_in1, wc_in2, wc_in3):
+        """
+        Multiply three wave data in the complex format.
 
-        np.multiply(wh1, wh2, wh2)
-        np.multiply(wh2, wh3, wh3)
+        Parameters
+        ----------
+        wc_in1, wc_in2, wc_in3: (M1, M2, ..., Md, NW + 1) complex ndarray
+            Wave data to be multiplied.
 
-        rfft(wh3, overwrite_x = True)
+        Returns
+        -------
+        wc_out: (M1, M2, ..., Md, NW + 1) complex ndarray
+            An array where the output is stored.
+        """
 
-        out[:N2] = wh3[:N2]
-        out[N2:] = 0.0
-
-        return ret
+        product_phys = (
+            irfft(wc_in1 * self.J3, n=self.J3)
+            * irfft(wc_in2 * self.J3, n=self.J3)
+            * irfft(wc_in3 * self.J3, n=self.J3)
+        )
+        return np.array(rfft(product_phys)[..., : self.NW + 1] / self.J3)

@@ -4,7 +4,7 @@
 BSD
 
 ## Install
-  python setup.py install
+  python setup.py install --record files.txt
 
 ## Uninstall
 For unix
@@ -32,3 +32,11 @@ To stop and remove the container,
 
     $ docker-compose down
     
+If you want to launch JupyterLab without token,
+
+    $ docker-compose run --service-ports python start.sh jupyter lab --LabApp.token=''
+
+To install nose,
+
+    $ docker exec -it <container name> start.sh
+    $ conda install nose

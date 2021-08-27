@@ -5,3 +5,7 @@ __pycache__
 build/
 *.egg-info
 *.egg
+.DS_Store
+.vscode/
+*.hdf5
+tmp/

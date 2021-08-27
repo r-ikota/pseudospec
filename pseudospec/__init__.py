@@ -1,2 +1,2 @@
-from .speclib import NWtoJ, SpecCalc
+from .speclib import SpecCalc
 from .speceq import SpecEQ
