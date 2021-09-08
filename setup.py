@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="pseudospec",
-    version="1.0.0",
+    version="1.0.1",
     description="a module for the pseudo-spectral method",
     url="https://github.com/r-ikota/pseudospec",
     packages=["pseudospec"],

@@ -8,9 +8,9 @@ FROM $BASE_CONTAINER
 # COPY --chown=$NB_USER:$NB_GID pseudospec/ $PKGDIR/pseudospec 
 # COPY --chown=$NB_USER:$NB_GID tests/ $HOME/tests 
 USER $NB_UID
-RUN conda install --yes nose pytest && \
+RUN conda install --yes nose pytest sphinx && \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER
 # RUN cd $PKGDIR ; python setup.py install --record files.txt
 WORKDIR $HOME/work
-CMD ["start.sh", "jupyter", "notebook", "--port=8889", "--NotebookApp.token=''"]
+CMD ["start.sh", "jupyter", "notebook", "--port=8899", "--NotebookApp.token=''"]

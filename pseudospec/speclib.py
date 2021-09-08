@@ -264,8 +264,9 @@ class SpecCalc:
 
         Parameters
         ----------
-        wc_in1, wc_in2: (M1, M2, ..., Md, NW + 1) complex ndarray
+        wc_in1, wc_in2: (..., NW + 1) complex ndarray
             Wave data to be multiplied.
+            If ``wc_in1.shape[:-1] != wc_in2.shape[:-1]``, they must be broadcastable to a common shape (which becomes wc_out.shape[:-1]).
 
         Returns
         -------
@@ -284,8 +285,9 @@ class SpecCalc:
 
         Parameters
         ----------
-        wc_in1, wc_in2, wc_in3: (M1, M2, ..., Md, NW + 1) complex ndarray
+        wc_in1, wc_in2, wc_in3: (..., NW + 1) complex ndarray
             Wave data to be multiplied.
+            If ``not (wc_in1.shape[:-1] == wc_in2.shape[:-1] == wc_in3.shape[:-1])``, they must be a broadcastable to a common shape (which becomes wc_out.shape[:-1]).
 
         Returns
         -------

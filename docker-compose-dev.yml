@@ -4,7 +4,9 @@ services:
         build:
             context: ./
             dockerfile: ./Dockerfile-dev
+        environment: 
+            - PYTHONPATH=/home/jovyan/work
         ports:
-            - "8889:8889"
+            - "127.0.0.1:8899:8899"
         volumes:
             - .:/home/jovyan/work:cached

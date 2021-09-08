@@ -27,6 +27,17 @@ class SpecEQ:
         self._paramNames = ()
         self._paramDefault = []
 
+    def reset(self, NW):
+        """
+        Resets the truncation wave number NW.
+
+        Parameters
+        ----------
+        NW: int
+            A new truncation wave number.
+        """
+        self.__init__(NW)
+
     def getParamNames(self):
         return self._paramNames
 
@@ -69,7 +80,7 @@ class SpecEQ:
             self.sc.wconvert_c2r(wc), list(wc.shape[:-2]) + [self.NC * self.NWrsize]
         )
 
-    def evolve(self, fh, atrange, args=(), NTlump=100, **keyargs):
+    def evolve(self, fh, atrange, args=(), NTlump=100, prog_bar=True, **keyargs):
         """
         keyargs: options except max_step that are passed to solve_ivp
 
@@ -120,7 +131,9 @@ class SpecEQ:
         powerspec_dset.resize(lidx + size_append, axis=0)
 
         # Evolve.
-        for s, e in tqdm(zip(sid, eid), desc="Total of {0:d} its".format(len(sid))):
+        for s, e in tqdm(
+            zip(sid, eid), desc="Computing ...", total=len(sid), disable=not prog_bar,
+        ):
             t_span = (ctrange[s], ctrange[e])
             t_eval = ctrange[s : e + 1]
             sol = solve_ivp(
@@ -148,7 +161,7 @@ class SpecEQ:
     def eq(self, t, u, *args):
         pass
 
-    def mkInitDataSet(self, wc0, fh, args=()):
+    def mkInitDataSet(self, wc0, fh):
         """
         Prepare an hd5 dataset for the initial condition of a PDE.
         
@@ -191,5 +204,3 @@ class SpecEQ:
         ds_trange[0] = 0.0
         fh["NW"] = self.NW
         fh["J"] = self.J
-        if args:
-            fh["args"] = args

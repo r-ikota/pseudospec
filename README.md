@@ -34,7 +34,7 @@ To stop and remove the container,
     
 If you want to launch JupyterLab without token,
 
-    $ docker-compose run --service-ports python start.sh jupyter lab --LabApp.token=''
+    $ docker-compose run --service-ports python start.sh jupyter lab --ports 8889 --LabApp.token=''
 
 To install nose,
 
