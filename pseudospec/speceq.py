@@ -1,7 +1,25 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 from .speclib import SpecCalc
-from tqdm import tqdm
+from pathlib import Path
+from tqdm import tqdm as tqdm_tf  # for terminal and file output
+from tqdm.notebook import tqdm as tqdm_nb  # for notebook output
+
+
+def get_itr(itr, total: int, pb_type=None, pb_file="pb-log.txt"):
+    if not pb_type:
+        yield from itr
+
+    elif pb_type == "terminal":
+        yield from tqdm_tf(itr, total=total)
+
+    elif pb_type == "notebook":
+        yield from tqdm_nb(itr, total=total)
+
+    elif pb_type == "file":
+        pb_file_path = Path(pb_file)
+        with open(pb_file_path, "w") as pfile:
+            yield from tqdm_tf(itr, total=total, file=pfile)
 
 
 class SpecEQ:
@@ -64,7 +82,7 @@ class SpecEQ:
 
     def wconvert_wc2wrf(self, wc):
         """
-        Converts a wave data in the complex format to one in the flatten real format. 
+        Converts a wave data in the complex format to one in the flatten real format.
 
         Parameters
         ----------
@@ -80,12 +98,33 @@ class SpecEQ:
             self.sc.wconvert_c2r(wc), list(wc.shape[:-2]) + [self.NC * self.NWrsize]
         )
 
-    def evolve(self, fh, atrange, args=(), NTlump=100, prog_bar=True, **keyargs):
+    def evolve(
+        self,
+        fh,
+        atrange,
+        args=(),
+        NTlump=100,
+        pb_type=None,
+        pb_file="pb-log.txt",
+        **keyargs
+    ):
         """
-        keyargs: options except max_step that are passed to solve_ivp
 
+        Parameters
+        ----------
         atrange: 1D nd array
             Assumed to start from zero.
+
+        pb_type: str
+            The type of the output for the progress bar;
+            either None, 'terminal', 'notebook', or 'file'.
+
+        pb_file: str
+            If pb_type == 'file', then the progress bar will be written to the file
+            specified with pb_file.
+
+        keyargs: options except max_step that are passed to solve_ivp
+
         """
 
         eq = self.eq
@@ -131,8 +170,8 @@ class SpecEQ:
         powerspec_dset.resize(lidx + size_append, axis=0)
 
         # Evolve.
-        for s, e in tqdm(
-            zip(sid, eid), desc="Computing ...", total=len(sid), disable=not prog_bar,
+        for s, e in get_itr(
+            zip(sid, eid), total=len(sid), pb_type=pb_type, pb_file=pb_file
         ):
             t_span = (ctrange[s], ctrange[e])
             t_eval = ctrange[s : e + 1]
@@ -164,7 +203,7 @@ class SpecEQ:
     def mkInitDataSet(self, wc0, fh):
         """
         Prepare an hd5 dataset for the initial condition of a PDE.
-        
+
         Parameters
         ----------
         wc0: (NC, NW + 1) complex ndarray

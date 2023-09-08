@@ -1,0 +1,11 @@
+pylint
+nose
+pytest
+rope
+black
+sphinx
+papermill
+jupyter-cache
+invoke
+doit
+panel
