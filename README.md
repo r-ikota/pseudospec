@@ -4,9 +4,11 @@
 BSD
 
 ## Install
+
   python setup.py install --record files.txt
 
 ## Uninstall
+
 For unix
 
     python setup.py install --record files.txt
@@ -21,6 +23,10 @@ For Windows
 
     Read files in the directory "samples".
 
+## Notice
+
+- Before updating, you might have to remove the egg file.
+- One of code samples requires [Panel](https://panel.holoviz.org).
 
 
 ## Docker

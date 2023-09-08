@@ -4,8 +4,8 @@ services:
         build:
             context: ./
             dockerfile: ./Dockerfile-dev
-        environment: 
-            - PYTHONPATH=/home/jovyan/work
+        environment:
+            - PYTHONPATH=/home/jovyan/work/src
         ports:
             - "127.0.0.1:8899:8899"
         volumes:
