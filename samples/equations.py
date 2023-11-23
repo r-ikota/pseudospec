@@ -1,4 +1,3 @@
-import numpy as np
 from pseudospec import SpecEQ
 
 
@@ -24,7 +23,8 @@ class FHN(SpecEQ):
         DuvDt = sc.get_zero_cwave((2,))
 
         DuvDt[0] = (
-            Du * sc.sdiff2(u) + (sc.mult3(u, self.one - u, u - a * self.one) - v) / eps
+            Du * sc.sdiff2(u)
+            + (sc.mult3(u, self.one - u, u - a * self.one) - v) / eps
         )
         DuvDt[1] = Dv * sc.sdiff2(v) + eps * (u - gamma * v)
 
@@ -59,7 +59,7 @@ class KdV(SpecEQ):
     def __init__(self, N, NC=1):
         SpecEQ.__init__(self, N, NC=NC)
         self._paramNames = ("mu",)
-        self._paramDefault = [0.022 ** 2 / 4.0]
+        self._paramDefault = [0.022**2 / 4.0]
 
     def eq(self, t, u, *args):
         """
@@ -70,4 +70,3 @@ class KdV(SpecEQ):
         sc = self.sc
 
         return -sc.mult2(u, sc.sdiff1(u)) - mu * sc.sdiff(u, 3)
-

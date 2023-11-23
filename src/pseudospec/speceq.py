@@ -1,13 +1,12 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 from .speclib import SpecCalc
-from pathlib import Path
 from tqdm import tqdm as tqdm_tf  # for terminal and file output
 from tqdm.notebook import tqdm as tqdm_nb  # for notebook output
 
 
-def get_itr(itr, total: int, pb_type=None, pb_file="pb-log.txt"):
-    if not pb_type:
+def get_itr(itr, total: int, pb_type=None, pb_file=None):
+    if pb_type is None:
         yield from itr
 
     elif pb_type == "terminal":
@@ -17,9 +16,11 @@ def get_itr(itr, total: int, pb_type=None, pb_file="pb-log.txt"):
         yield from tqdm_nb(itr, total=total)
 
     elif pb_type == "file":
-        pb_file_path = Path(pb_file)
-        with open(pb_file_path, "w") as pfile:
-            yield from tqdm_tf(itr, total=total, file=pfile)
+        if pb_file is None:
+            with open("pb-log", "w", encoding="utf_8") as pfile:
+                yield from tqdm_tf(itr, total=total, file=pfile)
+        else:
+            yield from tqdm_tf(itr, total=total, file=pb_file)
 
 
 class SpecEQ:
@@ -35,7 +36,7 @@ class SpecEQ:
     sc: SpecCalc instance
     """
 
-    def __init__(self, NW, NC=1, *args, **kwargs):
+    def __init__(self, NW, NC=1):
         self.NW = NW
         self.NC = NC
         self.sc = SpecCalc(NW)
@@ -95,7 +96,8 @@ class SpecEQ:
             The wave data converted to the flatten real format.
         """
         return np.reshape(
-            self.sc.wconvert_c2r(wc), list(wc.shape[:-2]) + [self.NC * self.NWrsize]
+            self.sc.wconvert_c2r(wc),
+            list(wc.shape[:-2]) + [self.NC * self.NWrsize],
         )
 
     def evolve(
@@ -149,12 +151,12 @@ class SpecEQ:
         t_hist_dset[-1] = ctrange[-1]
 
         tsize = ctrange.size
-        round = tsize // NTlump
-        if round == 0:
+        div_num = tsize // NTlump
+        if div_num == 0:
             sid = [0]
             eid = [tsize - 1]
         else:
-            sid = [NTlump * r for r in range(round)]
+            sid = [NTlump * r for r in range(div_num)]
             eid = sid[1:]
             eid.append(tsize - 1)
 
