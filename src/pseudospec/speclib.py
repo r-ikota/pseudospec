@@ -4,7 +4,6 @@ from scipy.fft import rfft, irfft, next_fast_len
 
 
 class SpecCalc:
-
     """
     A class for pseudo-spectral method.
     Functions treated are assumed to be real-valued.
@@ -18,14 +17,18 @@ class SpecCalc:
     ----------
     NW: int
         The truncation wave number.
+
     NWrsize: int
         The size of wave data in the real format, that is, NWrsize = 2*NW + 1.
         If u = sum(n=-N, ..., N) C(N) * exp(2 * pi * i * n * x), then the wave data is stored as (A(0), A(1), A(2), ..., A(N), B(1), ..., B(N)), where A(n) = Re C(n) and B(n) = Im C(n).
+
     J: int
         The size of the wave data in the physical space format.
         For a real-valued u, the physical space data is (u(x[0]), u(x[1]), ..., u(x[[J-1])).
+
     J2: int
         The size of the wave data in the physical space format for the multiplication of two wave data.
+
     J3: int
         The size of the wave data in the physical space format for the multiplication of three wave data.
 
@@ -45,7 +48,7 @@ class SpecCalc:
         self.J3 = J3
 
         self._D1factor = 2.0j * np.pi * np.arange(self.NW + 1)
-        self._D2factor = self._D1factor ** 2
+        self._D2factor = self._D1factor**2
         self._x = np.linspace(0.0, 1.0, J, endpoint=False)
 
     def get_zero_rwave(self, shape=()):
@@ -106,7 +109,7 @@ class SpecCalc:
         Returns
         -------
         ret: (shape[0], shape[1], ... ,shape[-1], J) ndarray with the dtype complex128.
-            A zero-padded array with the shape list(shape) + [NW + 1].        
+            A zero-padded array with the shape list(shape) + [NW + 1].
         """
         return np.zeros(list(shape) + [self.J], dtype=np.float64)
 
@@ -116,7 +119,7 @@ class SpecCalc:
 
         Parameters
         ----------
-        wr: (M1, M2, ..., Md, 2*NW + 1) real ndarray 
+        wr: (M1, M2, ..., Md, 2*NW + 1) real ndarray
             Input wave data in the real format.
 
         Return
@@ -140,7 +143,7 @@ class SpecCalc:
 
         Return
         ------
-        wr: (M1, M2, ..., Md, 2*NW + 1) real ndarray 
+        wr: (M1, M2, ..., Md, 2*NW + 1) real ndarray
             Input wave data in the real format.
         """
         wr = self.get_zero_rwave(wc.shape[:-1])
@@ -166,7 +169,7 @@ class SpecCalc:
 
         Returns
         -------
-        wp: (M1, M2, ..., Md, J) real ndarray 
+        wp: (M1, M2, ..., Md, J) real ndarray
             Input wave data in the real format.
 
 
@@ -182,7 +185,7 @@ class SpecCalc:
 
         Parameters
         ----------
-        wp: (M1, M2, ..., Md, J) real ndarray 
+        wp: (M1, M2, ..., Md, J) real ndarray
             Input wave data in the real format.
 
         Returns
@@ -240,6 +243,7 @@ class SpecCalc:
         ----------
         wc_in: (M1, M2, ..., Md, NW + 1) complex ndarray
             An array to be differentiated.
+
         k: int
             The order of the differentiation.
 
@@ -249,12 +253,12 @@ class SpecCalc:
             An array where the output is stored.
         """
 
-        return wc_in * self._D1factor ** k
+        return wc_in * self._D1factor**k
 
     def fdiff(self, u):
         """
         Differentiates a physical space wave data with the central difference.
-        
+
         """
         return (u[..., 2:] - u[..., :-2]) / 2.0 * self.J
 

@@ -6,6 +6,24 @@ from tqdm.notebook import tqdm as tqdm_nb  # for notebook output
 
 
 def get_itr(itr, total: int, pb_type=None, pb_file=None):
+    """
+    return a tqdm iterator with a specified progress bar
+
+    Parameters
+    ----------
+    itr: iterator
+        an iterator to be wrapped
+
+    total: int
+        the total number of iterations
+
+    pb_type: str, optional, defaults to None
+        the type of a progress bar; either 'terminal', 'notebook', or 'file'
+
+    pb_file: file object
+        this specifies the file into which the progress bar is written if pb_type is 'file'.
+    """
+
     if pb_type is None:
         yield from itr
 
@@ -31,9 +49,21 @@ class SpecEQ:
     --------------------------
     NW: int
         The truncation wave number.
-    NC: int
+
+    NC: int, optional, defaults to 1
         The number of unknown variables.
+
+    Attributes
+    ----------
+    NW: int
+
+    NC: int
+
     sc: SpecCalc instance
+
+    J: int
+
+    NWrsize: int
     """
 
     def __init__(self, NW, NC=1):
@@ -55,7 +85,7 @@ class SpecEQ:
         NW: int
             A new truncation wave number.
         """
-        self.__init__(NW)
+        self.__init__(NW, self.NC)
 
     def getParamNames(self):
         return self._paramNames
@@ -108,12 +138,15 @@ class SpecEQ:
         NTlump=100,
         pb_type=None,
         pb_file="pb-log.txt",
-        **keyargs
+        **keyargs,
     ):
         """
 
         Parameters
         ----------
+        fh: h5py.Group
+            The data is written here
+
         atrange: 1D nd array
             Assumed to start from zero.
 
@@ -184,7 +217,7 @@ class SpecEQ:
                 t_span,
                 wrf0,
                 t_eval=t_eval,
-                **keyargs
+                **keyargs,
             )
             wrf_extd = np.transpose(sol.y)[1:]
             wc_extd = self.wconvert_wrf2wc(wrf_extd)
@@ -210,6 +243,8 @@ class SpecEQ:
         ----------
         wc0: (NC, NW + 1) complex ndarray
             An initial wave data in the complex format.
+
+        fh: h5py.Group
         """
 
         # Create a dataset for a wave data in the complex format.
